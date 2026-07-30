@@ -2,224 +2,323 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global Market & Oil Wars Intelligence Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PUBG 2D Ultra 1000x Battle Royale</title>
   <style>
-    :root {
-      --bg-color: #0b0e14;
-      --card-bg: #151922;
-      --accent: #2962ff;
-      --text: #e1e6eb;
-      --border: #2a2e39;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; user-select: none; touch-action: none; }
     body {
-      background-color: var(--bg-color);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      overflow-x: hidden;
+      margin: 0; padding: 0; background: #05070a; color: #fff;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; overflow: hidden;
     }
 
-    /* Top Navigation Header */
-    header {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    /* Top HUD Styling */
+    #hud {
+      position: absolute; top: 15px; left: 20px; z-index: 100;
+      display: flex; gap: 20px; background: rgba(13, 17, 23, 0.85);
+      padding: 12px 22px; border-radius: 12px; border: 1px solid rgba(0, 230, 118, 0.3);
+      box-shadow: 0 0 15px rgba(0, 230, 118, 0.15); backdrop-filter: blur(8px);
     }
 
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #00e676;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .hud-stat { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+    .hp-container { width: 120px; height: 14px; background: #1a2332; border-radius: 7px; overflow: hidden; border: 1px solid #2a3b53; }
+    .hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #00e676, #69f0ae); transition: width 0.15s ease-out; }
 
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #00e676;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #00e676;
-      animation: pulse 1.5s infinite;
+    #kill-feed {
+      position: absolute; top: 15px; right: 20px; z-index: 100;
+      text-align: right; font-family: monospace; font-size: 13px; color: #ffab00;
+      display: flex; flex-direction: column; gap: 4px; pointer-events: none;
     }
+    .feed-item { background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px; border-left: 3px solid #ffab00; }
 
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.3; }
-      100% { opacity: 1; }
+    /* Weapon Selector Bar */
+    #weapon-bar {
+      position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 10px; z-index: 100; background: rgba(0,0,0,0.7); padding: 8px; border-radius: 10px;
     }
-
-    /* Main Grid Layout */
-    .dashboard-container {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      grid-gap: 15px;
-      padding: 15px;
-      height: calc(100vh - 100px);
+    .weapon-slot {
+      padding: 6px 14px; background: #1a1f2c; border: 1px solid #334155; border-radius: 6px;
+      font-size: 12px; font-weight: bold; cursor: pointer; color: #94a3b8; transition: 0.2s;
     }
+    .weapon-slot.active { border-color: #00e676; color: #00e676; background: rgba(0,230,118,0.1); }
 
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-title {
-      padding: 10px 15px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: rgba(255,255,255,0.02);
-      border-bottom: 1px solid var(--border);
-      color: #8f9cae;
-    }
-
-    .left-column, .right-column {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .heatmap-section {
-      height: 400px;
-    }
-
-    .chart-section {
-      height: 450px;
-    }
-
-    .news-section {
-      flex-grow: 1;
-      min-height: 500px;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-      .dashboard-container {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
+    canvas {
+      border: 1px solid #1e293b; background: #0f172a; cursor: crosshair;
+      box-shadow: 0 0 40px rgba(0,0,0,0.9); border-radius: 8px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Running Ticker -->
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-    {
-      "symbols": [
-        {"proName": "TVC:USOIL", "title": "Crude Oil WTI"},
-        {"proName": "TVC:UKOIL", "title": "Brent Crude Oil"},
-        {"proName": "TVC:GOLD", "title": "Gold"},
-        {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
-        {"proName": "NASDAQ:AAPL", "title": "Apple"},
-        {"proName": "NASDAQ:NVDA", "title": "NVIDIA"},
-        {"proName": "NASDAQ:TSLA", "title": "Tesla"}
-      ],
-      "showSymbolLogo": true,
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "displayMode": "adaptive",
-      "locale": "en"
+  <div id="hud">
+    <div class="hud-stat">
+      <span>HEALTH:</span>
+      <div class="hp-container"><div id="hp-bar" class="hp-bar"></div></div>
+    </div>
+    <div class="hud-stat" style="color:#ff5252;">KILLS: <span id="kills">0</span></div>
+    <div class="hud-stat" style="color:#40c4ff;">ALIVE: <span id="alive">10</span></div>
+  </div>
+
+  <div id="kill-feed"></div>
+
+  <div id="weapon-bar">
+    <div id="slot-1" class="weapon-slot active">[1] PISTOL</div>
+    <div id="slot-2" class="weapon-slot">[2] AKM</div>
+    <div id="slot-3" class="weapon-slot">[3] M416</div>
+    <div id="slot-4" class="weapon-slot">[4] AWM</div>
+  </div>
+
+  <canvas id="gameCanvas" width="960" height="640"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Web Audio Synthesizer (No external sound files needed!)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        
+        if (type === 'shoot') {
+          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'hit') {
+          osc.type = 'square'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        }
+      } catch(e){}
     }
-    </script>
-  </div>
 
-  <header>
-    <h1><span class="live-dot"></span> GLOBAL MARKETS & OIL INTELLIGENCE TERMINAL</h1>
-    <span style="font-size: 0.8rem; color: #8f9cae;">Real-Time Financial Data</span>
-  </header>
+    // UI Refs
+    const hpBar = document.getElementById("hp-bar");
+    const killsEl = document.getElementById("kills");
+    const aliveEl = document.getElementById("alive");
+    const killFeed = document.getElementById("kill-feed");
 
-  <div class="dashboard-container">
-    <!-- Left Column: Charts & Heatmap -->
-    <div class="left-column">
-      
-      <!-- Interactive Oil & Stock Chart -->
-      <div class="card chart-section">
-        <div class="card-title">Live Technical Chart (Oil / Gold / Stocks)</div>
-        <div class="tradingview-widget-container" style="height:100%;width:100%">
-          <div id="tradingview_chart" style="height:calc(100% - 32px);width:100%"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-          <script type="text/javascript">
-          new TradingView.widget({
-            "autosize": true,
-            "symbol": "TVC:USOIL",
-            "interval": "D",
-            "timezone": "Etc/UTC",
-            "theme": "dark",
-            "style": "1",
-            "locale": "en",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "allow_symbol_change": true,
-            "container_id": "tradingview_chart"
-          });
-          </script>
-        </div>
-      </div>
+    // Weapon Inventory Configuration
+    const WEAPONS = {
+      PISTOL: { id: 1, name: "PISTOL", damage: 20, speed: 10, rate: 250, color: "#ffee58", radius: 3, ammo: Infinity },
+      AKM:    { id: 2, name: "AKM", damage: 40, speed: 13, rate: 110, color: "#ff6d00", radius: 4, ammo: 90 },
+      M416:   { id: 3, name: "M416", damage: 28, speed: 15, rate: 80, color: "#00e5ff", radius: 3, ammo: 120 },
+      AWM:    { id: 4, name: "AWM", damage: 120, speed: 22, rate: 850, color: "#e040fb", radius: 5, ammo: 15 }
+    };
 
-      <!-- Top 500 Companies (S&P 500 Heatmap) -->
-      <div class="card heatmap-section">
-        <div class="card-title">Top 500 Companies Market Performance (S&P 500 Heatmap)</div>
-        <div class="tradingview-widget-container" style="height:100%;">
-          <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
-          {
-            "dataSource": "SPX500",
-            "blockSize": "market_cap_basic",
-            "blockColor": "change",
-            "grouping": "sector",
-            "locale": "en",
-            "colorTheme": "dark",
-            "hasTopBar": false,
-            "isZoomEnabled": true,
-            "hasSymbolTooltip": true
+    const player = {
+      x: 480, y: 320, radius: 15, color: "#00e676", speed: 3.5, hp: 100, maxHp: 100,
+      weapon: WEAPONS.PISTOL, inventory: [WEAPONS.PISTOL], lastShot: 0, angle: 0
+    };
+
+    const zone = { x: 480, y: 320, radius: 460, shrinkRate: 0.07 };
+    let kills = 0, gameOver = false, mouseX = 480, mouseY = 320, isMouseDown = false;
+    const keys = {};
+
+    window.addEventListener("keydown", e => {
+      keys[e.key.toLowerCase()] = true;
+      if (['1','2','3','4'].includes(e.key)) switchWeapon(parseInt(e.key));
+    });
+    window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+    canvas.addEventListener("mousemove", e => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
+      player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+    });
+    canvas.addEventListener("mousedown", () => isMouseDown = true);
+    window.addEventListener("mouseup", () => isMouseDown = false);
+
+    function switchWeapon(slotId) {
+      const found = Object.values(WEAPONS).find(w => w.id === slotId);
+      if (found && player.inventory.includes(found)) {
+        player.weapon = found;
+        document.querySelectorAll('.weapon-slot').forEach(el => el.classList.remove('active'));
+        document.getElementById(`slot-${slotId}`).classList.add('active');
+      }
+    }
+
+    const bullets = [], botBullets = [], particles = [], lootDrops = [], bots = [];
+
+    // Spawn Initial Loot Drops & Airdrops
+    for (let i = 0; i < 15; i++) {
+      lootDrops.push({
+        x: Math.random() * (canvas.width - 80) + 40,
+        y: Math.random() * (canvas.height - 80) + 40,
+        item: [WEAPONS.AKM, WEAPONS.M416, WEAPONS.AWM, "MEDKIT"][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    // Spawn AI Bots
+    const botNames = ["Alpha", "Viper", "Ghost", "Reaper", "Titan", "Spectre", "Rogue", "Shadow", "Hunter"];
+    for (let i = 0; i < 9; i++) {
+      bots.push({
+        id: botNames[i], x: Math.random() * (canvas.width - 80) + 40, y: Math.random() * (canvas.height - 80) + 40,
+        radius: 15, color: "#ff5252", speed: 1.6, hp: 100, maxHp: 100, weapon: WEAPONS.AKM, lastShot: 0
+      });
+    }
+
+    function addFeed(msg) {
+      const div = document.createElement("div"); div.className = "feed-item"; div.textContent = msg;
+      killFeed.appendChild(div);
+      setTimeout(() => div.remove(), 3500);
+    }
+
+    function createExplosion(x, y, color) {
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x, y, dx: (Math.random() - 0.5) * 6, dy: (Math.random() - 0.5) * 6,
+          radius: Math.random() * 3 + 1.5, color, life: 25
+        });
+      }
+    }
+
+    function shoot(shooter, angle, isBot = false) {
+      const now = Date.now();
+      if (now - shooter.lastShot < shooter.weapon.rate) return;
+      shooter.lastShot = now;
+      playSound('shoot');
+
+      const list = isBot ? botBullets : bullets;
+      list.push({
+        x: shooter.x + Math.cos(angle) * shooter.radius, y: shooter.y + Math.sin(angle) * shooter.radius,
+        dx: Math.cos(angle) * shooter.weapon.speed, dy: Math.sin(angle) * shooter.weapon.speed,
+        damage: shooter.weapon.damage, color: shooter.weapon.color, radius: shooter.weapon.radius
+      });
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      // Player Movement
+      if ((keys['w'] || keys['arrowup']) && player.y > player.radius) player.y -= player.speed;
+      if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - player.radius) player.y += player.speed;
+      if ((keys['a'] || keys['arrowleft']) && player.x > player.radius) player.x -= player.speed;
+      if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - player.radius) player.x += player.speed;
+
+      if (isMouseDown) shoot(player, player.angle);
+
+      // Playzone Damage
+      if (zone.radius > 45) zone.radius -= zone.shrinkRate;
+      if (Math.hypot(player.x - zone.x, player.y - zone.y) > zone.radius) player.hp -= 0.2;
+      if (player.hp <= 0) { player.hp = 0; gameOver = true; alert("ELIMINATED! Game Over."); }
+
+      // Loot Pickup
+      lootDrops.forEach((drop, idx) => {
+        if (Math.hypot(player.x - drop.x, player.y - drop.y) < player.radius + 12) {
+          if (drop.item === "MEDKIT") {
+            player.hp = Math.min(player.hp + 50, player.maxHp);
+            addFeed("💊 Health Restored (+50 HP)");
+          } else {
+            if (!player.inventory.includes(drop.item)) player.inventory.push(drop.item);
+            switchWeapon(drop.item.id);
+            addFeed("🔫 Picked up " + drop.item.name);
           }
-          </script>
-        </div>
-      </div>
+          lootDrops.splice(idx, 1);
+        }
+      });
 
-    </div>
+      // Bullets Update & Collisions
+      bullets.forEach((b, bIdx) => {
+        b.x += b.dx; b.y += b.dy;
+        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(bIdx, 1);
 
-    <!-- Right Column: Live News & War Impact -->
-    <div class="right-column">
-      <div class="card news-section">
-        <div class="card-title">Live Geopolitics, Oil & Stock News</div>
-        <div class="tradingview-widget-container" style="height:100%;">
-          <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-          {
-            "feedMode": "all_symbols",
-            "colorTheme": "dark",
-            "isTransparent": false,
-            "displayMode": "regular",
-            "width": "100%",
-            "height": "100%",
-            "locale": "en"
+        bots.forEach((bot, botIdx) => {
+          if (Math.hypot(bot.x - b.x, bot.y - b.y) < bot.radius + b.radius) {
+            playSound('hit'); createExplosion(bot.x, bot.y, "#ff1744");
+            bot.hp -= b.damage; bullets.splice(bIdx, 1);
+            if (bot.hp <= 0) {
+              addFeed("🎯 Eliminated " + bot.id);
+              bots.splice(botIdx, 1); kills++;
+            }
           }
-          </script>
-        </div>
-      </div>
-    </div>
-  </div>
+        });
+      });
 
+      botBullets.forEach((bb, bbIdx) => {
+        bb.x += bb.dx; bb.y += bb.dy;
+        if (Math.hypot(player.x - bb.x, player.y - bb.y) < player.radius + bb.radius) {
+          playSound('hit'); createExplosion(player.x, player.y, "#ff1744");
+          player.hp -= bb.damage; botBullets.splice(bbIdx, 1);
+        }
+      });
+
+      // Bot Behavior
+      bots.forEach(bot => {
+        const dist = Math.hypot(player.x - bot.x, player.y - bot.y);
+        if (dist < 280) {
+          const angle = Math.atan2(player.y - bot.y, player.x - bot.x);
+          bot.x += Math.cos(angle) * bot.speed; bot.y += Math.sin(angle) * bot.speed;
+          shoot(bot, angle, true);
+        }
+      });
+
+      // Particles Update
+      particles.forEach((p, idx) => {
+        p.x += p.dx; p.y += p.dy; p.life--;
+        if (p.life <= 0) particles.splice(idx, 1);
+      });
+
+      // HUD Sync
+      hpBar.style.width = (player.hp / player.maxHp * 100) + "%";
+      killsEl.textContent = kills; aliveEl.textContent = bots.length + 1;
+
+      if (bots.length === 0) { gameOver = true; alert("🏆 WINNER WINNER CHICKEN DINNER!"); }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid Pattern Map Background
+      ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+      for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+      // Blue Zone Circle (Glow)
+      ctx.beginPath(); ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 229, 255, 0.8)"; ctx.lineWidth = 4;
+      ctx.shadowColor = "#00e5ff"; ctx.shadowBlur = 12; ctx.stroke(); ctx.shadowBlur = 0;
+
+      // Loot Items
+      lootDrops.forEach(drop => {
+        ctx.fillStyle = drop.item === "MEDKIT" ? "#00e676" : "#ffd700";
+        ctx.fillRect(drop.x - 6, drop.y - 6, 12, 12);
+      });
+
+      // Particles
+      particles.forEach(p => {
+        ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.radius, p.radius);
+      });
+
+      // Bullets
+      [...bullets, ...botBullets].forEach(b => {
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fillStyle = b.color; ctx.fill();
+      });
+
+      // Player Visuals & Direction Barrel
+      ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+      ctx.fillStyle = player.color; ctx.shadowColor = player.color; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(0, 0, player.radius, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, -3, 22, 6); ctx.restore(); ctx.shadowBlur = 0;
+
+      // Bots & Dynamic Health Bars
+      bots.forEach(bot => {
+        ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.radius, 0, Math.PI * 2);
+        ctx.fillStyle = bot.color; ctx.fill();
+        // Bot HP bar
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(bot.x - 15, bot.y - 24, 30, 4);
+        ctx.fillStyle = "#ff1744"; ctx.fillRect(bot.x - 15, bot.y - 24, (bot.hp / bot.maxHp) * 30, 4);
+      });
+    }
+
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
+    loop();
+  </script>
 </body>
 </html>
