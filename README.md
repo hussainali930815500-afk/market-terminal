@@ -1,1 +1,225 @@
-# market-terminal
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Market & Oil Wars Intelligence Terminal</title>
+  <style>
+    :root {
+      --bg-color: #0b0e14;
+      --card-bg: #151922;
+      --accent: #2962ff;
+      --text: #e1e6eb;
+      --border: #2a2e39;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #00e676;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #00e676;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00e676;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    /* Main Grid Layout */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-gap: 15px;
+      padding: 15px;
+      height: calc(100vh - 100px);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      padding: 10px 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      color: #8f9cae;
+    }
+
+    .left-column, .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .heatmap-section {
+      height: 400px;
+    }
+
+    .chart-section {
+      height: 450px;
+    }
+
+    .news-section {
+      flex-grow: 1;
+      min-height: 500px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Running Ticker -->
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "TVC:USOIL", "title": "Crude Oil WTI"},
+        {"proName": "TVC:UKOIL", "title": "Brent Crude Oil"},
+        {"proName": "TVC:GOLD", "title": "Gold"},
+        {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
+        {"proName": "NASDAQ:AAPL", "title": "Apple"},
+        {"proName": "NASDAQ:NVDA", "title": "NVIDIA"},
+        {"proName": "NASDAQ:TSLA", "title": "Tesla"}
+      ],
+      "showSymbolLogo": true,
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "displayMode": "adaptive",
+      "locale": "en"
+    }
+    </script>
+  </div>
+
+  <header>
+    <h1><span class="live-dot"></span> GLOBAL MARKETS & OIL INTELLIGENCE TERMINAL</h1>
+    <span style="font-size: 0.8rem; color: #8f9cae;">Real-Time Financial Data</span>
+  </header>
+
+  <div class="dashboard-container">
+    <!-- Left Column: Charts & Heatmap -->
+    <div class="left-column">
+      
+      <!-- Interactive Oil & Stock Chart -->
+      <div class="card chart-section">
+        <div class="card-title">Live Technical Chart (Oil / Gold / Stocks)</div>
+        <div class="tradingview-widget-container" style="height:100%;width:100%">
+          <div id="tradingview_chart" style="height:calc(100% - 32px);width:100%"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+          <script type="text/javascript">
+          new TradingView.widget({
+            "autosize": true,
+            "symbol": "TVC:USOIL",
+            "interval": "D",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_chart"
+          });
+          </script>
+        </div>
+      </div>
+
+      <!-- Top 500 Companies (S&P 500 Heatmap) -->
+      <div class="card heatmap-section">
+        <div class="card-title">Top 500 Companies Market Performance (S&P 500 Heatmap)</div>
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+          {
+            "dataSource": "SPX500",
+            "blockSize": "market_cap_basic",
+            "blockColor": "change",
+            "grouping": "sector",
+            "locale": "en",
+            "colorTheme": "dark",
+            "hasTopBar": false,
+            "isZoomEnabled": true,
+            "hasSymbolTooltip": true
+          }
+          </script>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live News & War Impact -->
+    <div class="right-column">
+      <div class="card news-section">
+        <div class="card-title">Live Geopolitics, Oil & Stock News</div>
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+          {
+            "feedMode": "all_symbols",
+            "colorTheme": "dark",
+            "isTransparent": false,
+            "displayMode": "regular",
+            "width": "100%",
+            "height": "100%",
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
